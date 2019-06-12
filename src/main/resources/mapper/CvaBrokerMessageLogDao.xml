@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.rabbitmq.dao.CvaBrokerMessageLogDao">
+
+    <resultMap type="com.example.rabbitmq.entity.CvaBrokerMessageLogEntity" id="BaseResultMap">
+        <result property="messageId" column="message_id"/>
+        <result property="message" column="message"/>
+        <result property="tryCount" column="try_count"/>
+        <result property="status" column="status"/>
+        <result property="nextRetry" column="next_retry"/>
+        <result property="createDate" column="create_date"/>
+        <result property="updateDate" column="update_date"/>
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+    message_id, message, try_count, status, next_retry, create_date, update_date
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select
+        <include refid="Base_Column_List" />
+        from cva_broker_message_log
+        where message_id = #{messageId,jdbcType=VARCHAR}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from cva_broker_message_log
+    where message_id = #{messageId,jdbcType=VARCHAR}
+    </delete>
+
+    <insert id="insert" parameterType="com.example.rabbitmq.entity.CvaBrokerMessageLogEntity" >
+    insert into cva_broker_message_log (message_id, message, try_count,
+      status, next_retry, create_date,
+      update_date)
+    values (#{messageId,jdbcType=VARCHAR}, #{message,jdbcType=VARCHAR}, #{tryCount,jdbcType=INTEGER},
+      #{status,jdbcType=VARCHAR}, #{nextRetry,jdbcType=TIMESTAMP}, #{createDate,jdbcType=TIMESTAMP},
+      #{updateDate,jdbcType=TIMESTAMP})
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.example.rabbitmq.entity.CvaBrokerMessageLogEntity" >
+        insert into cva_broker_message_log
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="messageId != null" >
+                message_id,
+            </if>
+            <if test="message != null" >
+                message,
+            </if>
+            <if test="tryCount != null" >
+                try_count,
+            </if>
+            <if test="status != null" >
+                status,
+            </if>
+            <if test="nextRetry != null" >
+                next_retry,
+            </if>
+            <if test="createDate != null" >
+                create_date,
+            </if>
+            <if test="updateDate != null" >
+                update_date,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="messageId != null" >
+                #{messageId,jdbcType=VARCHAR},
+            </if>
+            <if test="message != null" >
+                #{message,jdbcType=VARCHAR},
+            </if>
+            <if test="tryCount != null" >
+                #{tryCount,jdbcType=INTEGER},
+            </if>
+            <if test="status != null" >
+                #{status,jdbcType=VARCHAR},
+            </if>
+            <if test="nextRetry != null" >
+                #{nextRetry,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createDate != null" >
+                #{createDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateDate != null" >
+                #{updateDate,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.example.rabbitmq.entity.CvaBrokerMessageLogEntity" >
+        update cva_broker_message_log
+        <set >
+            <if test="message != null" >
+                message = #{message,jdbcType=VARCHAR},
+            </if>
+            <if test="tryCount != null" >
+                try_count = #{tryCount,jdbcType=INTEGER},
+            </if>
+            <if test="status != null" >
+                status = #{status,jdbcType=VARCHAR},
+            </if>
+            <if test="nextRetry != null" >
+                next_retry = #{nextRetry,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createDate != null" >
+                create_date = #{createDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateDate != null" >
+                update_date = #{updateDate,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where message_id = #{messageId,jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.example.rabbitmq.entity.CvaBrokerMessageLogEntity" >
+    update cva_broker_message_log
+    set message = #{message,jdbcType=VARCHAR},
+      try_count = #{tryCount,jdbcType=INTEGER},
+      status = #{status,jdbcType=VARCHAR},
+      next_retry = #{nextRetry,jdbcType=TIMESTAMP},
+      create_date = #{createDate,jdbcType=TIMESTAMP},
+      update_date = #{updateDate,jdbcType=TIMESTAMP}
+    where message_id = #{messageId,jdbcType=VARCHAR}
+  </update>
+
+
+    <select id="queryStatusAndTimeoutMessage" resultMap="BaseResultMap">
+          <![CDATA[
+          select message_id, message, try_count, status, next_retry, create_date, update_date
+              from cva_broker_message_log bml
+              where status = '0'
+              and next_retry <= sysdate()
+          ]]>
+    </select>
+
+    <update id="updateReSend" >
+    update cva_broker_message_log bml
+    set bml.try_count = bml.try_count + 1,
+      bml.update_date = #{updateDate, jdbcType=TIMESTAMP}
+    where bml.message_id = #{messageId,jdbcType=VARCHAR}
+  </update>
+
+    <update id="changeBrokerMessageLogStatus" >
+    update cva_broker_message_log bml
+    set bml.status = #{status,jdbcType=VARCHAR},
+          bml.update_date = #{updateDate, jdbcType=TIMESTAMP}
+    where bml.message_id = #{messageId,jdbcType=VARCHAR}
+  </update>
+
+
+</mapper>
